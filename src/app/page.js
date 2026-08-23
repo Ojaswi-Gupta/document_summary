@@ -7,7 +7,7 @@ import SummaryOptions from '@/components/SummaryOptions';
 import SummaryDisplay from '@/components/SummaryDisplay';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
-import { Sparkles, Clock, ArrowRight, FileText } from 'lucide-react';
+import { Sparkles, Clock, ArrowRight, FileText, X } from 'lucide-react';
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -16,6 +16,7 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [history, setHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Load history on mount
   useEffect(() => {
@@ -52,7 +53,8 @@ export default function Home() {
   const loadFromHistory = (historicItem) => {
     setResult(historicItem);
     setStatus('success');
-    setFile(null); // Clear current file if any
+    setFile(null);
+    setShowHistory(false);
   };
 
   const handleSubmit = async () => {
@@ -120,132 +122,160 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
       <Header />
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16">
+      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16">
         
-        {/* Main Content Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          <div className="lg:col-span-2 space-y-8">
-            {/* Hero Section */}
-            {status === 'idle' && !result && (
-              <div className="text-center sm:text-left mb-6">
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-                  Summarize Any Document
-                </h2>
-                <p className="text-slate-600 mt-3 text-base sm:text-lg max-w-xl">
-                  Upload a PDF or image. Our AI extracts the text, generates a smart summary, highlights key points, and suggests improvements.
-                </p>
-                <div className="mt-6 flex flex-wrap items-center justify-center sm:justify-start gap-4">
-                  <button 
-                    onClick={handleSampleDocument}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg border border-blue-200 transition-colors text-sm"
-                  >
-                    <FileText className="h-4 w-4" />
-                    Try with a Sample Document
-                  </button>
-                </div>
-              </div>
+        {/* Top Actions: History Button */}
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={() => setShowHistory(true)}
+            className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow hover:-translate-y-0.5"
+          >
+            <Clock className="h-4 w-4" />
+            View History
+            {history.length > 0 && (
+              <span className="bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs">{history.length}</span>
             )}
+          </button>
+        </div>
 
-            {/* Upload + Options Section */}
-            {status !== 'success' && (
-              <div className="space-y-8 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200">
-                <FileUpload
-                  file={file}
-                  onFileSelect={handleFileSelect}
-                  onFileClear={handleFileClear}
-                  disabled={isLoading}
-                />
-
-                <SummaryOptions
-                  selected={summaryLength}
-                  onSelect={setSummaryLength}
-                  disabled={isLoading}
-                />
-
-                {/* Generate Button */}
-                {file && !isLoading && (
-                  <button
-                    onClick={handleSubmit}
-                    className="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-200/50 hover:shadow-xl hover:shadow-blue-300/50 text-lg"
-                  >
-                    <Sparkles className="h-5 w-5" />
-                    Generate Summary
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Loading State */}
-            {isLoading && (
-              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
-                <LoadingSpinner />
-              </div>
-            )}
-
-            {/* Error State */}
-            {status === 'error' && (
-              <ErrorMessage message={error} onRetry={handleSubmit} />
-            )}
-
-            {/* Success State */}
-            {status === 'success' && result && (
-              <div className="space-y-6">
-                <SummaryDisplay data={result} />
-
-                <button
-                  onClick={() => {
-                    setFile(null);
-                    setStatus('idle');
-                    setResult(null);
-                    setError('');
-                  }}
-                  className="w-full py-4 px-6 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-2xl border-2 border-slate-200 transition-colors flex items-center justify-center gap-2 shadow-sm"
+        <div className="space-y-8">
+          {/* Hero Section */}
+          {status === 'idle' && !result && (
+            <div className="text-center sm:text-left mb-6">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                Summarize Any Document
+              </h2>
+              <p className="text-slate-600 mt-3 text-base sm:text-lg max-w-xl">
+                Upload a PDF or image. Our AI extracts the text, generates a smart summary, highlights key points, and suggests improvements.
+              </p>
+              <div className="mt-6 flex flex-wrap items-center justify-center sm:justify-start gap-4">
+                <button 
+                  onClick={handleSampleDocument}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg border border-blue-200 transition-colors text-sm"
                 >
-                  <ArrowRight className="h-5 w-5" />
-                  Summarize Another Document
+                  <FileText className="h-4 w-4" />
+                  Try with a Sample Document
                 </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          {/* Sidebar / History */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-24">
-              <div className="p-5 border-b border-slate-100 flex items-center gap-2 bg-slate-50/50">
+          {/* Upload + Options Section */}
+          {status !== 'success' && (
+            <div className="space-y-8 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200">
+              <FileUpload
+                file={file}
+                onFileSelect={handleFileSelect}
+                onFileClear={handleFileClear}
+                disabled={isLoading}
+              />
+
+              <SummaryOptions
+                selected={summaryLength}
+                onSelect={setSummaryLength}
+                disabled={isLoading}
+              />
+
+              {/* Generate Button */}
+              {file && !isLoading && (
+                <button
+                  onClick={handleSubmit}
+                  className="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-200/50 hover:shadow-xl hover:shadow-blue-300/50 text-lg"
+                >
+                  <Sparkles className="h-5 w-5" />
+                  Generate Summary
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Loading State */}
+          {isLoading && (
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+              <LoadingSpinner />
+            </div>
+          )}
+
+          {/* Error State */}
+          {status === 'error' && (
+            <ErrorMessage message={error} onRetry={handleSubmit} />
+          )}
+
+          {/* Success State */}
+          {status === 'success' && result && (
+            <div className="space-y-6">
+              <SummaryDisplay data={result} />
+
+              <button
+                onClick={() => {
+                  setFile(null);
+                  setStatus('idle');
+                  setResult(null);
+                  setError('');
+                }}
+                className="w-full py-4 px-6 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-2xl border-2 border-slate-200 transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                <ArrowRight className="h-5 w-5" />
+                Summarize Another Document
+              </button>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* History Modal */}
+      {showHistory && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-slate-500" />
                 <h3 className="font-semibold text-slate-800">Recent Summaries</h3>
               </div>
-              <div className="p-3">
-                {history.length === 0 ? (
-                  <p className="text-sm text-slate-500 text-center py-6 px-4">
-                    Your recent document summaries will appear here (saved locally).
-                  </p>
-                ) : (
-                  <ul className="space-y-2">
-                    {history.map((item, index) => (
-                      <li key={item.id || index}>
-                        <button
-                          onClick={() => loadFromHistory(item)}
-                          className="w-full text-left p-3 hover:bg-slate-50 rounded-xl transition-colors border border-transparent hover:border-slate-200 group flex flex-col gap-1"
-                        >
-                          <span className="text-sm font-medium text-slate-700 truncate block w-full group-hover:text-blue-600 transition-colors">
-                            {item.fileName}
+              <button
+                onClick={() => setShowHistory(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto bg-slate-50/50">
+              {history.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="bg-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm border border-slate-100">
+                    <Clock className="h-5 w-5 text-slate-300" />
+                  </div>
+                  <p className="text-sm text-slate-500 font-medium">No history yet</p>
+                  <p className="text-xs text-slate-400 mt-1">Your recent summaries will appear here.</p>
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {history.map((item, index) => (
+                    <li key={item.id || index}>
+                      <button
+                        onClick={() => loadFromHistory(item)}
+                        className="w-full text-left p-4 bg-white rounded-xl transition-all border border-slate-200 hover:border-blue-300 group flex flex-col gap-2 shadow-sm hover:shadow"
+                      >
+                        <span className="text-sm font-semibold text-slate-700 truncate block w-full group-hover:text-blue-600 transition-colors">
+                          {item.fileName}
+                        </span>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="text-xs font-medium text-slate-400">
+                            {new Date(item.createdAt).toLocaleDateString()}
                           </span>
-                          <span className="text-xs text-slate-400">
-                            {new Date(item.createdAt).toLocaleDateString()} • {item.summaryLength}
+                          <span className="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md capitalize">
+                            {item.summaryLength}
                           </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+                        </div>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
-
         </div>
-      </main>
+      )}
 
       {/* Footer */}
       <footer className="w-full bg-slate-950 py-6 mt-auto">
