@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import FileUpload from '@/components/FileUpload';
 import SummaryOptions from '@/components/SummaryOptions';
 import SummaryDisplay from '@/components/SummaryDisplay';
+import DocumentChat from '@/components/DocumentChat';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
 import { Sparkles, Clock, ArrowRight, FileText, X, Zap, Brain, ShieldCheck } from 'lucide-react';
@@ -223,8 +224,10 @@ export default function Home() {
 
           {/* Success State */}
           {status === 'success' && result && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               <SummaryDisplay data={result} />
+              
+              <DocumentChat documentText={result.extractedText} />
 
               <button
                 onClick={() => {

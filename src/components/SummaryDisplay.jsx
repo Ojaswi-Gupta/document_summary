@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Copy, Check, FileText, Lightbulb, ListChecks, ChevronDown, ChevronUp, ScrollText, BarChart2 } from 'lucide-react';
+import Typewriter from './Typewriter';
 
 export default function SummaryDisplay({ data }) {
   const [copied, setCopied] = useState(false);
@@ -11,6 +12,13 @@ export default function SummaryDisplay({ data }) {
     keyPoints: true,
     suggestions: true,
   });
+
+  // Track if it's the initial render so we only typewrite once
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitialLoad(false), 2000);
+    return () => clearTimeout(timer);
+  }, [data]);
 
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -100,7 +108,9 @@ export default function SummaryDisplay({ data }) {
             </button>
             {expandedSections.summary && (
               <div className="px-5 pb-5">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px]">{data.summary}</p>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-line text-[15px]">
+                  {isInitialLoad ? <Typewriter text={data.summary} /> : data.summary}
+                </p>
               </div>
             )}
           </div>
@@ -122,7 +132,9 @@ export default function SummaryDisplay({ data }) {
                     {data.keyPoints.map((point, index) => (
                       <li key={index} className="flex items-start gap-3">
                         <span className="flex-shrink-0 w-6 h-6 bg-green-50 text-green-700 border border-green-200 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">{index + 1}</span>
-                        <span className="text-gray-700 text-[15px] leading-relaxed">{point}</span>
+                        <span className="text-gray-700 text-[15px] leading-relaxed">
+                          {isInitialLoad ? <Typewriter text={point} speed={10} /> : point}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -148,7 +160,9 @@ export default function SummaryDisplay({ data }) {
                     {data.improvementSuggestions.map((suggestion, index) => (
                       <li key={index} className="flex items-start gap-3">
                         <span className="flex-shrink-0 w-6 h-6 bg-amber-50 text-amber-700 border border-amber-200 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">{index + 1}</span>
-                        <span className="text-gray-700 text-[15px] leading-relaxed">{suggestion}</span>
+                        <span className="text-gray-700 text-[15px] leading-relaxed">
+                          {isInitialLoad ? <Typewriter text={suggestion} speed={10} /> : suggestion}
+                        </span>
                       </li>
                     ))}
                   </ul>

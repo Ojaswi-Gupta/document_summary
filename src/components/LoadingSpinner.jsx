@@ -14,8 +14,8 @@ export default function LoadingSpinner() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setStageIndex((prev) => (prev + 1) % stages.length);
-    }, 2500);
+      setStageIndex((prev) => (prev < stages.length - 1 ? prev + 1 : prev));
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
