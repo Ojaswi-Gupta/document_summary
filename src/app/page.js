@@ -7,7 +7,7 @@ import SummaryOptions from '@/components/SummaryOptions';
 import SummaryDisplay from '@/components/SummaryDisplay';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
-import { Sparkles, Clock, ArrowRight, FileText, X } from 'lucide-react';
+import { Sparkles, Clock, ArrowRight, FileText, X, Zap, Brain, ShieldCheck } from 'lucide-react';
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -118,6 +118,12 @@ export default function Home() {
 
   const isLoading = status === 'loading';
 
+  const features = [
+    { icon: Zap, title: "Lightning Fast", desc: "Extracts text and summarizes in seconds.", iconBg: "bg-amber-50", iconColor: "text-amber-500" },
+    { icon: Brain, title: "Multimodal AI", desc: "Natively understands both PDFs and images.", iconBg: "bg-purple-50", iconColor: "text-purple-500" },
+    { icon: ShieldCheck, title: "Privacy First", desc: "Summaries are generated securely.", iconBg: "bg-emerald-50", iconColor: "text-emerald-500" },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
       <Header />
@@ -221,6 +227,30 @@ export default function Home() {
             </div>
           )}
         </div>
+
+        {/* Features Carousel (Marquee) */}
+        {status === 'idle' && !result && (
+          <div className="mt-20 w-full max-w-full overflow-hidden relative pb-4">
+            {/* Fading Edges */}
+            <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-r from-slate-50 to-transparent z-10"></div>
+            <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-l from-slate-50 to-transparent z-10"></div>
+            
+            <div className="animate-marquee-infinite">
+              {[...features, ...features, ...features].map((feat, i) => (
+                <div key={i} className="inline-flex items-center gap-4 bg-white border border-slate-200 px-5 py-4 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] mx-3 w-[280px] sm:w-[320px] flex-shrink-0 hover:border-blue-200 hover:shadow-md transition-all group cursor-default">
+                  <div className={`p-3 rounded-xl ${feat.iconBg} ${feat.iconColor} shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+                    <feat.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-800 text-sm tracking-tight">{feat.title}</h4>
+                    <p className="text-slate-500 text-xs mt-0.5 leading-relaxed">{feat.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
       </main>
 
       {/* History Modal */}

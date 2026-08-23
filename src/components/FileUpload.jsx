@@ -86,33 +86,42 @@ export default function FileUpload({ file, onFileSelect, onFileClear, disabled }
   return (
     <div
       {...getRootProps()}
-      className={`w-full rounded-2xl border-2 border-dashed p-8 sm:p-12 text-center cursor-pointer transition-all duration-300 ${
+      className={`group relative w-full rounded-2xl border-2 border-dashed p-8 sm:p-12 text-center cursor-pointer transition-all duration-500 overflow-hidden ${
         isDragActive
           ? 'border-blue-500 bg-blue-50/80 scale-[1.02] shadow-inner'
-          : 'border-slate-300 bg-slate-50/50 hover:border-blue-400 hover:bg-blue-50/50 hover:shadow-sm'
+          : 'border-slate-300 bg-slate-50/50 hover:border-blue-400 hover:bg-blue-50/30 hover:shadow-[0_0_30px_rgba(59,130,246,0.15)] hover:-translate-y-0.5'
       } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
+      {/* Subtle animated gradient background on hover */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+
       <input {...getInputProps()} />
-      <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100">
+      
+      <div className="relative z-10 bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100 group-hover:scale-110 group-hover:shadow-md transition-all duration-500">
         <UploadCloud
-          className={`h-8 w-8 transition-colors ${
-            isDragActive ? 'text-blue-500' : 'text-slate-400'
+          className={`h-8 w-8 transition-colors duration-500 ${
+            isDragActive ? 'text-blue-500' : 'text-slate-400 group-hover:text-blue-500'
           }`}
         />
+        {/* Pulsing ring around icon on hover */}
+        <div className="absolute inset-0 rounded-full border-2 border-blue-400 opacity-0 group-hover:animate-ping duration-1000"></div>
       </div>
-      {isDragActive ? (
-        <p className="text-blue-600 font-semibold text-lg">Drop your file here...</p>
-      ) : (
-        <>
-          <p className="text-slate-700 font-semibold text-base sm:text-lg">
-            Drag & drop your document here
-          </p>
-          <p className="text-slate-500 mt-1.5 text-sm font-medium">or click to browse files</p>
-          <p className="text-slate-400 mt-4 text-xs font-medium uppercase tracking-wider">
-            Supports PDF, PNG, JPG, WEBP, TXT • Max 4MB
-          </p>
-        </>
-      )}
+
+      <div className="relative z-10 transition-transform duration-500 group-hover:translate-y-1">
+        {isDragActive ? (
+          <p className="text-blue-600 font-semibold text-lg">Drop your file here...</p>
+        ) : (
+          <>
+            <p className="text-slate-700 font-semibold text-base sm:text-lg">
+              Drag & drop your document here
+            </p>
+            <p className="text-slate-500 mt-1.5 text-sm font-medium">or click to browse files</p>
+            <p className="text-slate-400 mt-4 text-xs font-medium uppercase tracking-wider">
+              Supports PDF, PNG, JPG, WEBP, TXT • Max 4MB
+            </p>
+          </>
+        )}
+      </div>
     </div>
   );
 }
