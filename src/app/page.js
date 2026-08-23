@@ -133,7 +133,11 @@ export default function Home() {
       <div className="absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute top-[10%] right-[10%] w-[500px] h-[500px] bg-purple-400/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-      <Header onOpenHistory={() => setShowHistory(true)} historyCount={history.length} />
+      <Header 
+        onOpenHistory={() => setShowHistory(true)} 
+        historyCount={history.length} 
+        onHomeClick={handleFileClear}
+      />
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16 relative z-10">
         

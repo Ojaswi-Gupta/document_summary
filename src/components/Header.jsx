@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react';
 import { FileText, Zap, Clock } from 'lucide-react';
 
-export default function Header({ onOpenHistory, historyCount = 0 }) {
+import Link from 'next/link';
+
+export default function Header({ onOpenHistory, historyCount = 0, onHomeClick }) {
   const [requestsLeft, setRequestsLeft] = useState(10);
   const [isClient, setIsClient] = useState(false);
 
@@ -33,15 +35,25 @@ export default function Header({ onOpenHistory, historyCount = 0 }) {
   return (
     <header className="w-full border-b border-white/50 bg-white/60 backdrop-blur-md sticky top-0 z-50 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-600 rounded-lg shadow-sm">
+        
+        <Link 
+          href="/" 
+          onClick={(e) => {
+            if (onHomeClick) {
+              e.preventDefault();
+              onHomeClick();
+            }
+          }}
+          className="flex items-center gap-3 cursor-pointer group"
+        >
+          <div className="p-2 bg-blue-600 rounded-lg shadow-sm group-hover:bg-blue-700 transition-colors">
             <FileText className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight">DocSummary AI</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900 tracking-tight group-hover:text-blue-700 transition-colors">DocSummary AI</h1>
             <p className="text-xs text-gray-500 hidden sm:block">Intelligent document extraction & summarization</p>
           </div>
-        </div>
+        </Link>
         
         <div className="flex items-center gap-2 sm:gap-3">
           {isClient && onOpenHistory && (
