@@ -108,7 +108,7 @@ User uploads document (PDF/Image)
 
 ---
 
-## 📝 Approach Write-up (200 words)
+## 📝 Approach
 
 I built DocSummary AI as a full-stack Next.js application that leverages Google Gemini 2.0 Flash's multimodal capabilities to handle the entire document processing pipeline in a single API call.
 
