@@ -334,7 +334,12 @@ export default function Home() {
                         </span>
                         <div className="flex items-center justify-between w-full">
                           <span className="text-xs font-medium text-slate-400">
-                            {new Date(item.createdAt).toLocaleDateString()}
+                            {new Date(item.createdAt).toLocaleString(undefined, {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: 'numeric',
+                              minute: '2-digit'
+                            })}
                           </span>
                           <span className="text-xs font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md capitalize">
                             {item.summaryLength}
