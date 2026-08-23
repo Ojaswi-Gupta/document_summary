@@ -147,7 +147,7 @@ export default function Home() {
         <div className="space-y-8">
           {/* Hero Section */}
           {status === 'idle' && !result && (
-            <div className="text-center sm:text-left mb-6">
+            <div className="text-center sm:text-left mb-6 animate-fade-in-up">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                 Summarize Any Document
               </h2>
@@ -168,7 +168,7 @@ export default function Home() {
 
           {/* Upload + Options Section */}
           {status !== 'success' && (
-            <div className="space-y-8 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200">
+            <div className="space-y-8 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 animate-fade-in-up animation-delay-200">
               <FileUpload
                 file={file}
                 onFileSelect={handleFileSelect}
@@ -230,7 +230,7 @@ export default function Home() {
 
         {/* Features Carousel (Marquee) */}
         {status === 'idle' && !result && (
-          <div className="mt-20 w-full max-w-full overflow-hidden relative pb-4">
+          <div className="mt-20 w-full max-w-full overflow-hidden relative pb-4 animate-fade-in-up animation-delay-400">
             {/* Fading Edges */}
             <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-r from-slate-50 to-transparent z-10"></div>
             <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-l from-slate-50 to-transparent z-10"></div>
