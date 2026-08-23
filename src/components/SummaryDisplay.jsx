@@ -32,32 +32,21 @@ export default function SummaryDisplay({ data }) {
     };
   }, [data]);
 
-  const getBestVoice = () => {
+  const getBestVoice = (targetLangCode) => {
     const voices = window.speechSynthesis.getVoices();
     if (!voices || voices.length === 0) return null;
 
-    // Prioritize natural, premium, or specific high-quality English voices
-    const preferredVoices = [
-      'Google UK English Female', // Excellent natural voice in Chrome
-      'Google US English',        // Good fallback in Chrome
-      'Samantha',                 // Excellent default on macOS
-      'Daniel',                   // Good British macOS voice
-      'Karen',                    // Good Australian macOS voice
-      'Microsoft Zira',           // Good Windows default
-    ];
+    // Filter voices that match the target language code (e.g., 'es' for 'es-ES' or 'es-MX')
+    const matchingVoices = voices.filter(v => v.lang.toLowerCase().startsWith(targetLangCode));
 
-    for (const name of preferredVoices) {
-      const voice = voices.find(v => v.name.includes(name));
-      if (voice) return voice;
+    if (matchingVoices.length > 0) {
+      // Prioritize premium/natural voices in that language if they exist (Google, Apple premium, etc)
+      const premium = matchingVoices.find(v => v.name.includes('Premium') || v.name.includes('Google') || v.name.includes('Enhanced'));
+      return premium || matchingVoices[0];
     }
 
-    // Fallback: Find any English premium voice
-    const premiumEnglish = voices.find(v => v.lang.startsWith('en') && v.name.includes('Premium'));
-    if (premiumEnglish) return premiumEnglish;
-
-    // Last resort: Just find any English voice
-    const anyEnglish = voices.find(v => v.lang.startsWith('en'));
-    return anyEnglish || voices[0];
+    // If no exact language match is found, just return any voice as a fallback
+    return voices[0];
   };
 
   const toggleSpeech = () => {
@@ -98,7 +87,21 @@ export default function SummaryDisplay({ data }) {
 
       const utterance = new SpeechSynthesisUtterance(readableScript);
       
-      const bestVoice = getBestVoice();
+      // Map the UI dropdown language to BCP-47 language codes
+      const langMap = {
+        'English': 'en',
+        'Spanish': 'es',
+        'French': 'fr',
+        'German': 'de',
+        'Hindi': 'hi',
+        'Japanese': 'ja',
+        'Chinese (Simplified)': 'zh'
+      };
+      
+      const targetLangCode = langMap[data.language] || 'en';
+      utterance.lang = targetLangCode; // Crucial for correct phonetic pronunciation
+      
+      const bestVoice = getBestVoice(targetLangCode);
       if (bestVoice) {
         utterance.voice = bestVoice;
       }

@@ -67,6 +67,7 @@ export async function POST(request) {
       fileType: file.type,
       fileSize: file.size,
       summaryLength,
+      language, // Passed down so the frontend TTS knows what voice to pick
       id: Date.now().toString(), // Added ID for history tracking
       createdAt: new Date().toISOString(),
       ...result,
