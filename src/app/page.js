@@ -8,18 +8,20 @@ import SummaryDisplay from '@/components/SummaryDisplay';
 import DocumentChat from '@/components/DocumentChat';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
-import { Sparkles, Clock, ArrowRight, FileText, X, Zap, Brain, ShieldCheck, MessageSquare } from 'lucide-react';
+import { Sparkles, Clock, ArrowRight, ArrowLeft, FileText, X, Zap, Brain, ShieldCheck, MessageSquare } from 'lucide-react';
 
 export default function Home() {
   const [file, setFile] = useState(null);
   const [summaryLength, setSummaryLength] = useState('medium');
   const [promptMode, setPromptMode] = useState('standard');
+  const [language, setLanguage] = useState('English');
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [viewingHistory, setViewingHistory] = useState(null);
 
   // Load history on mount
   useEffect(() => {
@@ -37,6 +39,7 @@ export default function Home() {
     setResult(null);
     setError('');
     setShowChat(false);
+    setViewingHistory(null);
   };
 
   const handleFileClear = () => {
@@ -45,6 +48,7 @@ export default function Home() {
     setResult(null);
     setError('');
     setShowChat(false);
+    setViewingHistory(null);
   };
 
   const handleSampleDocument = () => {
@@ -56,11 +60,8 @@ export default function Home() {
   };
 
   const loadFromHistory = (historicItem) => {
-    setResult(historicItem);
-    setStatus('success');
-    setFile(null);
+    setViewingHistory(historicItem);
     setShowHistory(false);
-    setShowChat(false);
   };
 
   const handleSubmit = async () => {
@@ -70,8 +71,8 @@ export default function Home() {
     try {
       const usage = JSON.parse(localStorage.getItem('docSummaryUsage') || '{"count": 0, "date": ""}');
       const today = new Date().toDateString();
-      if (usage.date === today && usage.count >= 10) {
-        setError("You've reached the free limit of 10 requests for today. Please try again tomorrow.");
+      if (usage.date === today && usage.count >= 50) {
+        setError("You've reached the free limit of 50 requests for today. Please try again tomorrow.");
         setStatus('error');
         return;
       }
@@ -81,12 +82,14 @@ export default function Home() {
     setResult(null);
     setError('');
     setShowChat(false);
+    setViewingHistory(null);
 
     try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('summaryLength', summaryLength);
       formData.append('promptMode', promptMode);
+      formData.append('language', language);
 
       const response = await fetch('/api/summarize', {
         method: 'POST',
@@ -108,7 +111,7 @@ export default function Home() {
         const today = new Date().toDateString();
         const newCount = usage.date === today ? usage.count + 1 : 1;
         localStorage.setItem('docSummaryUsage', JSON.stringify({ count: newCount, date: today }));
-        window.dispatchEvent(new CustomEvent('rateLimitUpdate', { detail: 10 - newCount }));
+        window.dispatchEvent(new CustomEvent('rateLimitUpdate', { detail: 50 - newCount }));
       } catch (e) { /* ignore */ }
 
       // Save to History
@@ -141,8 +144,29 @@ export default function Home() {
 
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16 relative z-10">
         
-        <div className="space-y-8">
-          {/* Hero Section */}
+        {viewingHistory ? (
+          <div className="space-y-6 animate-fade-in-up">
+            <button
+              onClick={() => setViewingHistory(null)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-600 hover:text-slate-900 font-medium rounded-xl border border-slate-200 shadow-sm transition-all text-sm mb-2 hover:bg-slate-50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {result ? "Return to Active Document" : "Return to Home"}
+            </button>
+            
+            <SummaryDisplay data={viewingHistory} />
+
+            <div className="bg-amber-50 border border-amber-200/60 rounded-2xl p-5 text-center shadow-sm">
+              <p className="text-sm text-amber-800 font-medium flex items-center justify-center gap-2">
+                <Clock className="h-5 w-5 text-amber-600" />
+                Chat is disabled for documents retrieved from history to save resources.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-8">
+            {/* Hero Section */}
           {status === 'idle' && !result && (
             <div className="text-center sm:text-left mb-6 animate-fade-in-up">
               <span className="inline-block py-1 px-3 rounded-full bg-slate-800 text-white text-xs font-semibold tracking-wide mb-4 shadow-md border border-slate-700">
@@ -183,24 +207,51 @@ export default function Home() {
                   disabled={isLoading}
                 />
 
-                {/* Quick Prompts */}
-                <div className="w-full">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Quick AI Action (Optional)
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={promptMode}
-                      onChange={(e) => setPromptMode(e.target.value)}
-                      className="w-full appearance-none bg-white border border-slate-200 text-slate-700 py-3.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer text-sm font-medium shadow-sm hover:border-slate-300"
-                    >
-                      <option value="standard">Standard Summary</option>
-                      <option value="eli5">Explain Like I'm 5 (ELI5)</option>
-                      <option value="action">Action Items Only</option>
-                      <option value="financials">Extract Numbers & Metrics</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                  {/* Quick Prompts */}
+                  <div className="w-full">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Quick AI Action
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={promptMode}
+                        onChange={(e) => setPromptMode(e.target.value)}
+                        className="w-full appearance-none bg-white border border-slate-200 text-slate-700 py-3.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer text-sm font-medium shadow-sm hover:border-slate-300"
+                      >
+                        <option value="standard">Standard Summary</option>
+                        <option value="eli5">Explain Like I'm 5 (ELI5)</option>
+                        <option value="action">Action Items Only</option>
+                        <option value="financials">Extract Numbers & Metrics</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Language Selection */}
+                  <div className="w-full">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Translate Output
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value)}
+                        className="w-full appearance-none bg-white border border-slate-200 text-slate-700 py-3.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer text-sm font-medium shadow-sm hover:border-slate-300"
+                      >
+                        <option value="English">English (Default)</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="French">French</option>
+                        <option value="German">German</option>
+                        <option value="Hindi">Hindi</option>
+                        <option value="Japanese">Japanese</option>
+                        <option value="Chinese (Simplified)">Chinese</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -318,7 +369,8 @@ export default function Home() {
             </div>
           </div>
         )}
-
+          </>
+        )}
       </main>
 
       {/* History Modal */}

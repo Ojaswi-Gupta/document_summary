@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Copy, Check, FileText, Lightbulb, ListChecks, ChevronDown, ChevronUp, ScrollText, BarChart2 } from 'lucide-react';
+import { Copy, Check, FileText, Lightbulb, ListChecks, ChevronDown, ChevronUp, ScrollText, BarChart2, Volume2, Square } from 'lucide-react';
 import Typewriter from './Typewriter';
 
 export default function SummaryDisplay({ data }) {
   const [copied, setCopied] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [activeTab, setActiveTab] = useState('summary'); // 'summary' | 'extracted'
   const [expandedSections, setExpandedSections] = useState({
     summary: true,
@@ -19,6 +20,71 @@ export default function SummaryDisplay({ data }) {
     const timer = setTimeout(() => setIsInitialLoad(false), 2000);
     return () => clearTimeout(timer);
   }, [data]);
+
+  // Clean up speech synthesis on unmount or data change
+  // Also pre-fetch voices so they are ready in Chrome
+  useEffect(() => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+    }
+    return () => {
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    };
+  }, [data]);
+
+  const getBestVoice = () => {
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return null;
+
+    // Prioritize natural, premium, or specific high-quality English voices
+    const preferredVoices = [
+      'Google UK English Female', // Excellent natural voice in Chrome
+      'Google US English',        // Good fallback in Chrome
+      'Samantha',                 // Excellent default on macOS
+      'Daniel',                   // Good British macOS voice
+      'Karen',                    // Good Australian macOS voice
+      'Microsoft Zira',           // Good Windows default
+    ];
+
+    for (const name of preferredVoices) {
+      const voice = voices.find(v => v.name.includes(name));
+      if (voice) return voice;
+    }
+
+    // Fallback: Find any English premium voice
+    const premiumEnglish = voices.find(v => v.lang.startsWith('en') && v.name.includes('Premium'));
+    if (premiumEnglish) return premiumEnglish;
+
+    // Last resort: Just find any English voice
+    const anyEnglish = voices.find(v => v.lang.startsWith('en'));
+    return anyEnglish || voices[0];
+  };
+
+  const toggleSpeech = () => {
+    if (!window.speechSynthesis) return;
+
+    if (isPlaying) {
+      window.speechSynthesis.cancel();
+      setIsPlaying(false);
+    } else {
+      const textToRead = `${data.summary}. Key Points: ${data.keyPoints?.join('. ')}. Suggestions: ${data.improvementSuggestions?.join('. ')}`;
+      const utterance = new SpeechSynthesisUtterance(textToRead);
+      
+      const bestVoice = getBestVoice();
+      if (bestVoice) {
+        utterance.voice = bestVoice;
+      }
+      
+      // Slightly slow down the rate for better comprehension
+      utterance.rate = 0.95;
+
+      utterance.onend = () => setIsPlaying(false);
+      utterance.onerror = () => setIsPlaying(false);
+      
+      setIsPlaying(true);
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
@@ -61,16 +127,28 @@ export default function SummaryDisplay({ data }) {
             </p>
           </div>
           
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex items-center gap-2 text-sm flex-wrap">
             <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg font-medium border border-blue-100">
               <BarChart2 className="h-4 w-4" />
               <span>{reduction}% reduction</span>
             </div>
+            
+            <button
+              onClick={toggleSpeech}
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors focus:ring-2 focus:ring-offset-2 font-medium ${
+                isPlaying 
+                  ? 'bg-rose-100 text-rose-700 hover:bg-rose-200 focus:ring-rose-500' 
+                  : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 focus:ring-indigo-500 border border-indigo-100'
+              }`}
+            >
+              {isPlaying ? <><Square className="h-4 w-4" fill="currentColor" /> Stop</> : <><Volume2 className="h-4 w-4" /> Listen</>}
+            </button>
+
             <button
               onClick={handleCopy}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-gray-900"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-900 hover:bg-gray-800 text-white transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 font-medium"
             >
-              {copied ? <><Check className="h-4 w-4 text-green-400" /> Copied!</> : <><Copy className="h-4 w-4" /> Copy {activeTab === 'summary' ? 'Summary' : 'Text'}</>}
+              {copied ? <><Check className="h-4 w-4 text-green-400" /> Copied!</> : <><Copy className="h-4 w-4" /> Copy</>}
             </button>
           </div>
         </div>

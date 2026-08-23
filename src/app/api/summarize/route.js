@@ -7,7 +7,9 @@ export const ALLOWED_TYPES = [
   'image/jpeg',
   'image/jpg',
   'image/webp',
-  'text/plain' // Added for sample document
+  'text/plain',
+  'audio/mpeg',
+  'audio/wav'
 ];
 
 export const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
@@ -18,6 +20,7 @@ export async function POST(request) {
     const file = formData.get('file');
     const summaryLength = formData.get('summaryLength') || 'medium';
     const promptMode = formData.get('promptMode') || 'standard';
+    const language = formData.get('language') || 'English';
 
     // Validate file exists
     if (!file || !(file instanceof File)) {
@@ -30,7 +33,7 @@ export async function POST(request) {
     // Validate file type
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: `Unsupported file type: ${file.type}. Please upload a PDF, PNG, JPG, WEBP, or TXT file.` },
+        { error: `Unsupported file type: ${file.type}. Please upload a PDF, Image, TXT, or Audio (MP3/WAV) file.` },
         { status: 400 }
       );
     }
@@ -56,7 +59,7 @@ export async function POST(request) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Generate summary
-    const result = await summarizeDocument(buffer, file.type, summaryLength, promptMode);
+    const result = await summarizeDocument(buffer, file.type, summaryLength, promptMode, language);
 
     return NextResponse.json({
       success: true,

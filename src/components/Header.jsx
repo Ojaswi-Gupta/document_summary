@@ -6,7 +6,7 @@ import { FileText, Zap, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Header({ onOpenHistory, historyCount = 0, onHomeClick }) {
-  const [requestsLeft, setRequestsLeft] = useState(10);
+  const [requestsLeft, setRequestsLeft] = useState(50);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -18,12 +18,12 @@ export default function Header({ onOpenHistory, historyCount = 0, onHomeClick })
         
         if (usage.date !== today) {
           localStorage.setItem('docSummaryUsage', JSON.stringify({ count: 0, date: today }));
-          setRequestsLeft(10);
+          setRequestsLeft(50);
         } else {
-          setRequestsLeft(Math.max(0, 10 - usage.count));
+          setRequestsLeft(Math.max(0, 50 - usage.count));
         }
       } catch (e) {
-        setRequestsLeft(10);
+        setRequestsLeft(50);
       }
     };
 

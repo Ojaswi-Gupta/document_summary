@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { UploadCloud, FileText, X, FileImage, File } from 'lucide-react';
+import { UploadCloud, FileText, X, FileImage, File, Volume2 } from 'lucide-react';
 
 const MAX_SIZE = 4 * 1024 * 1024; // 4MB
 
@@ -14,7 +14,7 @@ export default function FileUpload({ file, onFileSelect, onFileClear, disabled }
         if (err.code === 'file-too-large') {
           alert('File is too large. Maximum size is 4MB.');
         } else if (err.code === 'file-invalid-type') {
-          alert('Invalid file type. Please upload a PDF, PNG, JPG, WEBP, or TXT file.');
+          alert('Invalid file type. Please upload PDF, Image, TXT, or Audio (MP3/WAV).');
         }
         return;
       }
@@ -32,7 +32,9 @@ export default function FileUpload({ file, onFileSelect, onFileClear, disabled }
       'image/png': ['.png'],
       'image/jpeg': ['.jpg', '.jpeg'],
       'image/webp': ['.webp'],
-      'text/plain': ['.txt']
+      'text/plain': ['.txt'],
+      'audio/mpeg': ['.mp3'],
+      'audio/wav': ['.wav']
     },
     maxSize: MAX_SIZE,
     multiple: false,
@@ -48,6 +50,7 @@ export default function FileUpload({ file, onFileSelect, onFileClear, disabled }
   const getFileIcon = (type) => {
     if (type === 'application/pdf') return <FileText className="h-8 w-8 text-red-500" />;
     if (type?.startsWith('image/')) return <FileImage className="h-8 w-8 text-blue-500" />;
+    if (type?.startsWith('audio/')) return <Volume2 className="h-8 w-8 text-purple-500" />;
     return <File className="h-8 w-8 text-gray-500" />;
   };
 
@@ -113,11 +116,11 @@ export default function FileUpload({ file, onFileSelect, onFileClear, disabled }
         ) : (
           <>
             <p className="text-slate-700 font-semibold text-base sm:text-lg">
-              Drag & drop your document here
+              Drag & drop a document or audio file
             </p>
             <p className="text-slate-500 mt-1.5 text-sm font-medium">or click to browse files</p>
             <p className="text-slate-400 mt-4 text-xs font-medium uppercase tracking-wider">
-              Supports PDF, PNG, JPG, WEBP, TXT • Max 4MB
+              Supports PDF, PNG, JPG, TXT, MP3, WAV • Max 4MB
             </p>
           </>
         )}

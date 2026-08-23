@@ -49,7 +49,7 @@ Rules:
 - Respond ONLY with valid JSON, no other text`
 };
 
-export async function summarizeDocument(fileBuffer, mimeType, summaryLength = 'medium', promptMode = 'standard') {
+export async function summarizeDocument(fileBuffer, mimeType, summaryLength = 'medium', promptMode = 'standard', language = 'English') {
   let prompt = SUMMARY_PROMPTS[summaryLength] || SUMMARY_PROMPTS.medium;
 
   if (promptMode === 'eli5') {
@@ -60,23 +60,50 @@ export async function summarizeDocument(fileBuffer, mimeType, summaryLength = 'm
     prompt += '\n\nCRITICAL INSTRUCTION: Strictly focus the summary and key points on extracting numbers, metrics, and financial data.';
   }
 
+  if (language && language !== 'English') {
+    prompt += `\n\nCRITICAL INSTRUCTION: You must strictly translate all AI-generated content (the summary, key points, and improvement suggestions) into ${language}. Keep the JSON keys in English, only translate the values.`;
+  }
+
   const base64Data = fileBuffer.toString('base64');
 
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: [
-        {
-          inlineData: {
-            data: base64Data,
-            mimeType: mimeType,
-          },
-        },
-        prompt,
-      ],
-    });
+    const fallbackModels = [
+      'gemini-3.6-flash',
+      'gemini-3.5-flash',
+      'gemini-2.5-flash',
+      'gemini-3.1-flash-lite'
+    ];
 
-    const text = response.text;
+    let responseText = null;
+    let lastError = null;
+
+    for (const modelName of fallbackModels) {
+      try {
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: [
+            {
+              inlineData: {
+                data: base64Data,
+                mimeType: mimeType,
+              },
+            },
+            prompt,
+          ],
+        });
+        responseText = response.text;
+        break; // Success
+      } catch (e) {
+        console.warn(`[Gemini Summarize] Model ${modelName} failed. Trying next...`, e.message);
+        lastError = e;
+      }
+    }
+
+    if (!responseText) {
+      throw lastError;
+    }
+
+    const text = responseText;
     
     // Try to parse as JSON, handle cases where model wraps in code fences
     let cleanText = text.trim();
