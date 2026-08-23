@@ -52,7 +52,7 @@ export default function DocumentChat({ documentText }) {
   };
 
   return (
-    <div className="flex flex-col h-[500px] bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="flex flex-col h-[400px] bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="bg-slate-50 border-b border-gray-200 p-4 flex items-center gap-2">
         <MessageSquare className="h-5 w-5 text-blue-600" />
         <h3 className="font-bold text-slate-800">Chat with Document</h3>

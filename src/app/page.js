@@ -8,7 +8,7 @@ import SummaryDisplay from '@/components/SummaryDisplay';
 import DocumentChat from '@/components/DocumentChat';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
-import { Sparkles, Clock, ArrowRight, FileText, X, Zap, Brain, ShieldCheck } from 'lucide-react';
+import { Sparkles, Clock, ArrowRight, FileText, X, Zap, Brain, ShieldCheck, MessageSquare } from 'lucide-react';
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -19,6 +19,7 @@ export default function Home() {
   const [error, setError] = useState('');
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   // Load history on mount
   useEffect(() => {
@@ -35,6 +36,7 @@ export default function Home() {
     setStatus('idle');
     setResult(null);
     setError('');
+    setShowChat(false);
   };
 
   const handleFileClear = () => {
@@ -42,6 +44,7 @@ export default function Home() {
     setStatus('idle');
     setResult(null);
     setError('');
+    setShowChat(false);
   };
 
   const handleSampleDocument = () => {
@@ -57,6 +60,7 @@ export default function Home() {
     setStatus('success');
     setFile(null);
     setShowHistory(false);
+    setShowChat(false);
   };
 
   const handleSubmit = async () => {
@@ -76,6 +80,7 @@ export default function Home() {
     setStatus('loading');
     setResult(null);
     setError('');
+    setShowChat(false);
 
     try {
       const formData = new FormData();
@@ -224,10 +229,22 @@ export default function Home() {
 
           {/* Success State */}
           {status === 'success' && result && (
-            <div className="space-y-8">
+            <div className="space-y-8 animate-fade-in-up">
               <SummaryDisplay data={result} />
               
-              <DocumentChat documentText={result.extractedText} />
+              {!showChat ? (
+                <button
+                  onClick={() => setShowChat(true)}
+                  className="w-full py-4 px-6 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded-2xl border-2 border-blue-200 transition-colors flex items-center justify-center gap-2 shadow-sm animate-fade-in-up animation-delay-200"
+                >
+                  <MessageSquare className="h-5 w-5" />
+                  Chat with this Document
+                </button>
+              ) : (
+                <div className="animate-fade-in-up">
+                  <DocumentChat documentText={result.extractedText} />
+                </div>
+              )}
 
               <button
                 onClick={() => {
@@ -235,6 +252,7 @@ export default function Home() {
                   setStatus('idle');
                   setResult(null);
                   setError('');
+                  setShowChat(false);
                 }}
                 className="w-full py-4 px-6 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-2xl border-2 border-slate-200 transition-colors flex items-center justify-center gap-2 shadow-sm"
               >

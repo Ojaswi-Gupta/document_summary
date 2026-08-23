@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 
-export default function Typewriter({ text, speed = 15 }) {
+export default function Typewriter({ text, speed = 20 }) {
   const [displayed, setDisplayed] = useState('');
 
   useEffect(() => {
@@ -12,15 +12,12 @@ export default function Typewriter({ text, speed = 15 }) {
     
     let i = 0;
     const len = text.length;
-    // ensure the whole block finishes typing in at most 1.5 seconds
-    const totalTime = 1500;
-    const steps = totalTime / speed;
-    const chunkSize = Math.max(1, Math.ceil(len / steps));
-
+    
     setDisplayed('');
     const timer = setInterval(() => {
       if (i < len) {
-        i = Math.min(i + chunkSize, len);
+        // Type 1-2 characters per tick for a smooth, visible typing effect
+        i += 1; 
         setDisplayed(text.substring(0, i));
       } else {
         clearInterval(timer);
