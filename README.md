@@ -11,7 +11,7 @@ A professional, production-ready web application that takes any document (PDF or
 
 ---
 
-## ✨ Enterprise-Grade Features
+## ✨ Features
 
 - **One-Click Sample Document** — Try the app instantly without finding a file to upload
 - **Raw Text Extraction** — View the exact raw text extracted from the document alongside the AI summary
