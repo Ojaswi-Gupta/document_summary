@@ -128,7 +128,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
       <Header onOpenHistory={() => setShowHistory(true)} historyCount={history.length} />
 
-      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16">
         
         <div className="space-y-8">
           {/* Hero Section */}
@@ -298,7 +298,7 @@ export default function Home() {
         {/* Subtle glowing top border */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
         
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
             
             <div className="flex flex-col items-center sm:items-start gap-1.5">
