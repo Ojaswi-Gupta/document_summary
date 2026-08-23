@@ -17,6 +17,7 @@ export async function POST(request) {
     const formData = await request.formData();
     const file = formData.get('file');
     const summaryLength = formData.get('summaryLength') || 'medium';
+    const promptMode = formData.get('promptMode') || 'standard';
 
     // Validate file exists
     if (!file || !(file instanceof File)) {
@@ -55,7 +56,7 @@ export async function POST(request) {
     const buffer = Buffer.from(arrayBuffer);
 
     // Generate summary
-    const result = await summarizeDocument(buffer, file.type, summaryLength);
+    const result = await summarizeDocument(buffer, file.type, summaryLength, promptMode);
 
     return NextResponse.json({
       success: true,

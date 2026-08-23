@@ -49,8 +49,17 @@ Rules:
 - Respond ONLY with valid JSON, no other text`
 };
 
-export async function summarizeDocument(fileBuffer, mimeType, summaryLength = 'medium') {
-  const prompt = SUMMARY_PROMPTS[summaryLength] || SUMMARY_PROMPTS.medium;
+export async function summarizeDocument(fileBuffer, mimeType, summaryLength = 'medium', promptMode = 'standard') {
+  let prompt = SUMMARY_PROMPTS[summaryLength] || SUMMARY_PROMPTS.medium;
+
+  if (promptMode === 'eli5') {
+    prompt += '\n\nCRITICAL INSTRUCTION: You must explain the summary extremely simply, as if you are talking to a 5-year-old child.';
+  } else if (promptMode === 'action') {
+    prompt += '\n\nCRITICAL INSTRUCTION: Strictly focus the summary and key points on extracting actionable tasks, to-dos, and next steps.';
+  } else if (promptMode === 'financials') {
+    prompt += '\n\nCRITICAL INSTRUCTION: Strictly focus the summary and key points on extracting numbers, metrics, and financial data.';
+  }
+
   const base64Data = fileBuffer.toString('base64');
 
   try {

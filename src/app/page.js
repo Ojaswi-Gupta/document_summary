@@ -12,6 +12,7 @@ import { Sparkles, Clock, ArrowRight, FileText, X, Zap, Brain, ShieldCheck } fro
 export default function Home() {
   const [file, setFile] = useState(null);
   const [summaryLength, setSummaryLength] = useState('medium');
+  const [promptMode, setPromptMode] = useState('standard');
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
@@ -79,6 +80,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('summaryLength', summaryLength);
+      formData.append('promptMode', promptMode);
 
       const response = await fetch('/api/summarize', {
         method: 'POST',
@@ -118,23 +120,25 @@ export default function Home() {
 
   const isLoading = status === 'loading';
 
-  const features = [
-    { icon: Zap, title: "Lightning Fast", desc: "Extracts text and summarizes in seconds.", iconBg: "bg-amber-50", iconColor: "text-amber-500" },
-    { icon: Brain, title: "Multimodal AI", desc: "Natively understands both PDFs and images.", iconBg: "bg-purple-50", iconColor: "text-purple-500" },
-    { icon: ShieldCheck, title: "Privacy First", desc: "Summaries are generated securely.", iconBg: "bg-emerald-50", iconColor: "text-emerald-500" },
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col relative overflow-hidden">
+      
+      {/* Ambient Glow */}
+      <div className="absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[120px] pointer-events-none"></div>
+      <div className="absolute top-[10%] right-[10%] w-[500px] h-[500px] bg-purple-400/10 rounded-full blur-[100px] pointer-events-none"></div>
+
       <Header onOpenHistory={() => setShowHistory(true)} historyCount={history.length} />
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16 relative z-10">
         
         <div className="space-y-8">
           {/* Hero Section */}
           {status === 'idle' && !result && (
             <div className="text-center sm:text-left mb-6 animate-fade-in-up">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              <span className="inline-block py-1 px-3 rounded-full bg-slate-800 text-white text-xs font-semibold tracking-wide mb-4 shadow-md border border-slate-700">
+                ✨ Advanced AI Summarizer
+              </span>
+              <h2 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-800 to-slate-900 tracking-tight pb-1">
                 Summarize Any Document
               </h2>
               <p className="text-slate-600 mt-3 text-base sm:text-lg max-w-xl">
@@ -143,7 +147,7 @@ export default function Home() {
               <div className="mt-6 flex flex-wrap items-center justify-center sm:justify-start gap-4">
                 <button 
                   onClick={handleSampleDocument}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg border border-blue-200 transition-colors text-sm"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-blue-50 text-blue-700 font-medium rounded-xl border border-blue-200 transition-all text-sm shadow-sm hover:shadow"
                 >
                   <FileText className="h-4 w-4" />
                   Try with a Sample Document
@@ -154,7 +158,7 @@ export default function Home() {
 
           {/* Upload + Options Section */}
           {status !== 'success' && (
-            <div className="space-y-8 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200 animate-fade-in-up animation-delay-200">
+            <div className="space-y-8 bg-white/70 backdrop-blur-xl p-6 sm:p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-white animate-fade-in-up animation-delay-200">
               <FileUpload
                 file={file}
                 onFileSelect={handleFileSelect}
@@ -162,20 +166,44 @@ export default function Home() {
                 disabled={isLoading}
               />
 
-              <SummaryOptions
-                selected={summaryLength}
-                onSelect={setSummaryLength}
-                disabled={isLoading}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <SummaryOptions
+                  selected={summaryLength}
+                  onSelect={setSummaryLength}
+                  disabled={isLoading}
+                />
+
+                {/* Quick Prompts */}
+                <div className="w-full">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Quick AI Action (Optional)
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={promptMode}
+                      onChange={(e) => setPromptMode(e.target.value)}
+                      className="w-full appearance-none bg-white border border-slate-200 text-slate-700 py-3.5 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors cursor-pointer text-sm font-medium shadow-sm hover:border-slate-300"
+                    >
+                      <option value="standard">Standard Summary</option>
+                      <option value="eli5">Explain Like I'm 5 (ELI5)</option>
+                      <option value="action">Action Items Only</option>
+                      <option value="financials">Extract Numbers & Metrics</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Generate Button */}
               {file && !isLoading && (
                 <button
                   onClick={handleSubmit}
-                  className="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-200/50 hover:shadow-xl hover:shadow-blue-300/50 text-lg"
+                  className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:from-blue-800 active:to-indigo-800 text-white font-bold rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-blue-200/50 hover:shadow-xl hover:shadow-blue-300/50 text-lg hover:-translate-y-0.5"
                 >
                   <Sparkles className="h-5 w-5" />
-                  Generate Summary
+                  Generate AI Summary
                 </button>
               )}
             </div>
@@ -183,7 +211,7 @@ export default function Home() {
 
           {/* Loading State */}
           {isLoading && (
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+            <div className="bg-white/70 backdrop-blur-xl p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-white">
               <LoadingSpinner />
             </div>
           )}
@@ -214,25 +242,54 @@ export default function Home() {
           )}
         </div>
 
-        {/* Features Carousel (Marquee) */}
+        {/* Bento Box (How it works) */}
         {status === 'idle' && !result && (
-          <div className="mt-20 w-full max-w-full overflow-hidden relative pb-4 animate-fade-in-up animation-delay-400">
-            {/* Fading Edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-r from-slate-50 to-transparent z-10"></div>
-            <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-24 bg-gradient-to-l from-slate-50 to-transparent z-10"></div>
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up animation-delay-400">
             
-            <div className="animate-marquee-infinite">
-              {[...features, ...features, ...features].map((feat, i) => (
-                <div key={i} className="inline-flex items-center gap-4 bg-white border border-slate-200 px-5 py-4 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] mx-3 w-[280px] sm:w-[320px] flex-shrink-0 hover:border-blue-200 hover:shadow-md transition-all group cursor-default">
-                  <div className={`p-3 rounded-xl ${feat.iconBg} ${feat.iconColor} shrink-0 group-hover:scale-110 transition-transform duration-300`}>
-                    <feat.icon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-slate-800 text-sm tracking-tight">{feat.title}</h4>
-                    <p className="text-slate-500 text-xs mt-0.5 leading-relaxed">{feat.desc}</p>
-                  </div>
+            <div className="md:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 sm:p-10 text-white shadow-xl overflow-hidden relative group">
+              <div className="absolute right-0 top-0 opacity-10 transform translate-x-1/4 -translate-y-1/4 group-hover:scale-110 transition-transform duration-700">
+                <Brain className="w-64 h-64" />
+              </div>
+              <div className="relative z-10">
+                <div className="bg-white/10 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-md border border-white/10">
+                  <Zap className="text-amber-300 w-6 h-6" />
                 </div>
-              ))}
+                <h3 className="text-2xl sm:text-3xl font-bold mb-3 tracking-tight">Advanced Multimodal AI</h3>
+                <p className="text-slate-300 max-w-md text-sm sm:text-base leading-relaxed">
+                  Our multimodal AI engine natively parses PDFs and applies OCR to images in a single, lightning-fast pass. No legacy pipelines required.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm flex flex-col justify-between group hover:shadow-md hover:border-emerald-200 transition-all">
+              <div>
+                <div className="bg-emerald-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <ShieldCheck className="text-emerald-500 w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">Privacy First</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">Your documents are processed securely in real-time. History is saved locally on your device.</p>
+              </div>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm group hover:shadow-md hover:border-blue-200 transition-all">
+              <div className="bg-blue-50 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <FileText className="text-blue-500 w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Any Format</h3>
+              <p className="text-slate-500 text-sm leading-relaxed">Drag and drop PDFs, scanned PNGs, or raw text files. The AI extracts it seamlessly.</p>
+            </div>
+
+            <div className="md:col-span-2 bg-white border border-slate-200 rounded-3xl p-8 sm:p-10 shadow-sm group hover:shadow-md transition-all flex items-center justify-between overflow-hidden relative">
+              <div className="relative z-10 max-w-md">
+                <h3 className="text-2xl font-bold text-slate-800 mb-3 tracking-tight">Instant Actionable Insights</h3>
+                <p className="text-slate-500 text-sm sm:text-base leading-relaxed">
+                  Not just summaries. Get automatically extracted key points and improvement suggestions directly formatted in JSON for perfect frontend integration.
+                </p>
+              </div>
+              {/* Decorative JSON block */}
+              <div className="hidden sm:block absolute right-[-20px] top-[-10px] opacity-[0.03] transform rotate-12 bg-slate-900 text-white p-6 rounded-2xl font-mono text-sm pointer-events-none group-hover:rotate-6 transition-transform duration-700">
+                <pre>{`{\n  "summary": "...",\n  "keyPoints": [\n    "Item 1",\n    "Item 2"\n  ]\n}`}</pre>
+              </div>
             </div>
           </div>
         )}
