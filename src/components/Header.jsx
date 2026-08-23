@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { FileText, Zap } from 'lucide-react';
+import { FileText, Zap, Clock } from 'lucide-react';
 
-export default function Header() {
+export default function Header({ onOpenHistory, historyCount = 0 }) {
   const [requestsLeft, setRequestsLeft] = useState(10);
   const [isClient, setIsClient] = useState(false);
 
@@ -32,7 +32,7 @@ export default function Header() {
 
   return (
     <header className="w-full border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-600 rounded-lg shadow-sm">
             <FileText className="h-5 w-5 text-white" />
@@ -43,15 +43,30 @@ export default function Header() {
           </div>
         </div>
         
-        {isClient && (
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full">
-            <Zap className={`h-4 w-4 ${requestsLeft > 0 ? 'text-amber-500' : 'text-gray-400'}`} />
-            <span className="text-xs font-medium text-slate-700">
-              {requestsLeft} <span className="hidden sm:inline">free requests left today</span>
-              <span className="sm:hidden">left</span>
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {isClient && onOpenHistory && (
+            <button
+              onClick={onOpenHistory}
+              className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-sm transition-all hover:shadow hover:-translate-y-0.5"
+            >
+              <Clock className="h-4 w-4" />
+              <span className="hidden sm:inline">History</span>
+              {historyCount > 0 && (
+                <span className="bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs font-bold">{historyCount}</span>
+              )}
+            </button>
+          )}
+
+          {isClient && (
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full">
+              <Zap className={`h-4 w-4 ${requestsLeft > 0 ? 'text-amber-500' : 'text-gray-400'}`} />
+              <span className="text-xs font-medium text-slate-700">
+                {requestsLeft} <span className="hidden sm:inline">requests left</span>
+                <span className="sm:hidden">left</span>
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

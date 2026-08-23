@@ -126,24 +126,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col">
-      <Header />
+      <Header onOpenHistory={() => setShowHistory(true)} historyCount={history.length} />
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 sm:py-16">
         
-        {/* Top Actions: History Button */}
-        <div className="flex justify-end mb-6">
-          <button
-            onClick={() => setShowHistory(true)}
-            className="flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-blue-600 bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm transition-all hover:shadow hover:-translate-y-0.5"
-          >
-            <Clock className="h-4 w-4" />
-            View History
-            {history.length > 0 && (
-              <span className="bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs">{history.length}</span>
-            )}
-          </button>
-        </div>
-
         <div className="space-y-8">
           {/* Hero Section */}
           {status === 'idle' && !result && (
