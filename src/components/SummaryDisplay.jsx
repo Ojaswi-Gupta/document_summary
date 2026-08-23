@@ -67,8 +67,36 @@ export default function SummaryDisplay({ data }) {
       window.speechSynthesis.cancel();
       setIsPlaying(false);
     } else {
-      const textToRead = `${data.summary}. Key Points: ${data.keyPoints?.join('. ')}. Suggestions: ${data.improvementSuggestions?.join('. ')}`;
-      const utterance = new SpeechSynthesisUtterance(textToRead);
+      // Clean up markdown (asterisks, dashes, hashes) so it reads naturally
+      const cleanText = (str) => {
+        if (!str) return '';
+        return str
+          .replace(/[*#_•\-\\]/g, '') // Remove markdown syntax and bullet points
+          .replace(/\s+/g, ' ') // Collapse multiple spaces
+          .trim();
+      };
+
+      let readableScript = cleanText(data.summary) + ". ";
+      
+      if (data.keyPoints?.length > 0) {
+        readableScript += "Key points. ";
+        data.keyPoints.forEach(p => {
+          let text = cleanText(p);
+          if (!text.match(/[.!?]$/)) text += "."; // Ensure it ends with a period for a natural pause
+          readableScript += text + " ";
+        });
+      }
+
+      if (data.improvementSuggestions?.length > 0) {
+        readableScript += "Suggestions. ";
+        data.improvementSuggestions.forEach(s => {
+          let text = cleanText(s);
+          if (!text.match(/[.!?]$/)) text += ".";
+          readableScript += text + " ";
+        });
+      }
+
+      const utterance = new SpeechSynthesisUtterance(readableScript);
       
       const bestVoice = getBestVoice();
       if (bestVoice) {
