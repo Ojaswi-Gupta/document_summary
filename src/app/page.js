@@ -121,7 +121,7 @@ export default function Home() {
   const isLoading = status === 'loading';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex flex-col relative overflow-clip">
       
       {/* Ambient Glow */}
       <div className="absolute top-[-10%] left-[20%] w-[600px] h-[600px] bg-blue-400/20 rounded-full blur-[120px] pointer-events-none"></div>
@@ -166,7 +166,7 @@ export default function Home() {
                 disabled={isLoading}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="flex flex-col gap-6 pt-2">
                 <SummaryOptions
                   selected={summaryLength}
                   onSelect={setSummaryLength}

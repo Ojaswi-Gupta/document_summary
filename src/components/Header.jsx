@@ -31,7 +31,7 @@ export default function Header({ onOpenHistory, historyCount = 0 }) {
   }, []);
 
   return (
-    <header className="w-full border-b border-gray-200 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+    <header className="w-full border-b border-white/50 bg-white/60 backdrop-blur-md sticky top-0 z-50 shadow-[0_4px_30px_rgba(0,0,0,0.02)]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-blue-600 rounded-lg shadow-sm">
