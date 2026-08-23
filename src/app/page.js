@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import FileUpload from '@/components/FileUpload';
 import SummaryOptions from '@/components/SummaryOptions';
 import SummaryDisplay from '@/components/SummaryDisplay';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ErrorMessage from '@/components/ErrorMessage';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Clock, ArrowRight, FileText } from 'lucide-react';
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -15,6 +15,17 @@ export default function Home() {
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [history, setHistory] = useState([]);
+
+  // Load history on mount
+  useEffect(() => {
+    try {
+      const savedHistory = JSON.parse(localStorage.getItem('docSummaryHistory') || '[]');
+      setHistory(savedHistory.slice(0, 5)); // Keep only last 5
+    } catch (e) {
+      console.error('Failed to load history');
+    }
+  }, []);
 
   const handleFileSelect = (selectedFile) => {
     setFile(selectedFile);
@@ -30,8 +41,33 @@ export default function Home() {
     setError('');
   };
 
+  const handleSampleDocument = () => {
+    const sampleText = "The impact of Artificial Intelligence on modern software development is profound. Generative AI models are now capable of understanding vast amounts of unstructured data, including raw text and images, and converting them into actionable insights. Historically, developers had to rely on separate optical character recognition (OCR) engines like Tesseract to extract text from scanned documents, followed by specialized NLP models to summarize that text. Today, multimodal Large Language Models (LLMs) can perform both text extraction and summarization in a single pass. This not only reduces the complexity of software architecture but also minimizes points of failure and dramatically speeds up processing times. However, this shift requires developers to become proficient in prompt engineering and API integration, ensuring that AI responses are strictly formatted—such as in JSON—for seamless frontend integration. As we look to the future, AI will continue to abstract away boilerplate coding tasks, allowing engineers to focus on architecture, user experience, and solving complex business problems.";
+    
+    // Create a mock file object for the frontend to handle
+    const mockFile = new File([sampleText], "AI_in_Software_Development.txt", { type: "text/plain" });
+    handleFileSelect(mockFile);
+  };
+
+  const loadFromHistory = (historicItem) => {
+    setResult(historicItem);
+    setStatus('success');
+    setFile(null); // Clear current file if any
+  };
+
   const handleSubmit = async () => {
     if (!file) return;
+
+    // Check rate limit first
+    try {
+      const usage = JSON.parse(localStorage.getItem('docSummaryUsage') || '{"count": 0, "date": ""}');
+      const today = new Date().toDateString();
+      if (usage.date === today && usage.count >= 10) {
+        setError("You've reached the free limit of 10 requests for today. Please try again tomorrow.");
+        setStatus('error');
+        return;
+      }
+    } catch (e) { /* ignore */ }
 
     setStatus('loading');
     setResult(null);
@@ -55,102 +91,164 @@ export default function Home() {
 
       setResult(data);
       setStatus('success');
+
+      // Update Rate Limit
+      try {
+        const usage = JSON.parse(localStorage.getItem('docSummaryUsage') || '{"count": 0, "date": ""}');
+        const today = new Date().toDateString();
+        const newCount = usage.date === today ? usage.count + 1 : 1;
+        localStorage.setItem('docSummaryUsage', JSON.stringify({ count: newCount, date: today }));
+        window.dispatchEvent(new CustomEvent('rateLimitUpdate', { detail: 10 - newCount }));
+      } catch (e) { /* ignore */ }
+
+      // Save to History
+      try {
+        const newHistory = [data, ...history].slice(0, 5);
+        setHistory(newHistory);
+        localStorage.setItem('docSummaryHistory', JSON.stringify(newHistory));
+      } catch (e) { /* ignore */ }
+
     } catch (err) {
       setError(err.message || 'An unexpected error occurred. Please try again.');
       setStatus('error');
     }
   };
 
-  const handleRetry = () => {
-    handleSubmit();
-  };
-
-  const handleNewDocument = () => {
-    setFile(null);
-    setStatus('idle');
-    setResult(null);
-    setError('');
-    setSummaryLength('medium');
-  };
-
   const isLoading = status === 'loading';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
       <Header />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Hero Section - only show when idle */}
-        {status === 'idle' && !result && (
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Summarize Any Document
-            </h2>
-            <p className="text-gray-500 mt-2 text-sm sm:text-base max-w-lg mx-auto">
-              Upload a PDF or image of a document. Our AI will extract text, generate a
-              smart summary, highlight key points, and suggest improvements.
-            </p>
-          </div>
-        )}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+        
+        {/* Main Content Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <div className="lg:col-span-2 space-y-8">
+            {/* Hero Section */}
+            {status === 'idle' && !result && (
+              <div className="text-center sm:text-left mb-6">
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                  Summarize Any Document
+                </h2>
+                <p className="text-slate-600 mt-3 text-base sm:text-lg max-w-xl">
+                  Upload a PDF or image. Our AI extracts the text, generates a smart summary, highlights key points, and suggests improvements.
+                </p>
+                <div className="mt-6 flex flex-wrap items-center justify-center sm:justify-start gap-4">
+                  <button 
+                    onClick={handleSampleDocument}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg border border-blue-200 transition-colors text-sm"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Try with a Sample Document
+                  </button>
+                </div>
+              </div>
+            )}
 
-        {/* Upload + Options Section */}
-        {status !== 'success' && (
-          <div className="space-y-6">
-            <FileUpload
-              file={file}
-              onFileSelect={handleFileSelect}
-              onFileClear={handleFileClear}
-              disabled={isLoading}
-            />
+            {/* Upload + Options Section */}
+            {status !== 'success' && (
+              <div className="space-y-8 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-200">
+                <FileUpload
+                  file={file}
+                  onFileSelect={handleFileSelect}
+                  onFileClear={handleFileClear}
+                  disabled={isLoading}
+                />
 
-            <SummaryOptions
-              selected={summaryLength}
-              onSelect={setSummaryLength}
-              disabled={isLoading}
-            />
+                <SummaryOptions
+                  selected={summaryLength}
+                  onSelect={setSummaryLength}
+                  disabled={isLoading}
+                />
 
-            {/* Generate Button */}
-            {file && !isLoading && (
-              <button
-                onClick={handleSubmit}
-                className="w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-200 hover:shadow-xl hover:shadow-blue-300"
-              >
-                <Sparkles className="h-5 w-5" />
-                Generate Summary
-              </button>
+                {/* Generate Button */}
+                {file && !isLoading && (
+                  <button
+                    onClick={handleSubmit}
+                    className="w-full py-3.5 px-6 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-200/50 hover:shadow-xl hover:shadow-blue-300/50 text-lg"
+                  >
+                    <Sparkles className="h-5 w-5" />
+                    Generate Summary
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Loading State */}
+            {isLoading && (
+              <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
+                <LoadingSpinner />
+              </div>
+            )}
+
+            {/* Error State */}
+            {status === 'error' && (
+              <ErrorMessage message={error} onRetry={handleSubmit} />
+            )}
+
+            {/* Success State */}
+            {status === 'success' && result && (
+              <div className="space-y-6">
+                <SummaryDisplay data={result} />
+
+                <button
+                  onClick={() => {
+                    setFile(null);
+                    setStatus('idle');
+                    setResult(null);
+                    setError('');
+                  }}
+                  className="w-full py-4 px-6 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-2xl border-2 border-slate-200 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <ArrowRight className="h-5 w-5" />
+                  Summarize Another Document
+                </button>
+              </div>
             )}
           </div>
-        )}
 
-        {/* Loading State */}
-        {isLoading && <LoadingSpinner />}
-
-        {/* Error State */}
-        {status === 'error' && (
-          <div className="mt-6">
-            <ErrorMessage message={error} onRetry={handleRetry} />
+          {/* Sidebar / History */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-24">
+              <div className="p-5 border-b border-slate-100 flex items-center gap-2 bg-slate-50/50">
+                <Clock className="h-5 w-5 text-slate-500" />
+                <h3 className="font-semibold text-slate-800">Recent Summaries</h3>
+              </div>
+              <div className="p-3">
+                {history.length === 0 ? (
+                  <p className="text-sm text-slate-500 text-center py-6 px-4">
+                    Your recent document summaries will appear here (saved locally).
+                  </p>
+                ) : (
+                  <ul className="space-y-2">
+                    {history.map((item, index) => (
+                      <li key={item.id || index}>
+                        <button
+                          onClick={() => loadFromHistory(item)}
+                          className="w-full text-left p-3 hover:bg-slate-50 rounded-xl transition-colors border border-transparent hover:border-slate-200 group flex flex-col gap-1"
+                        >
+                          <span className="text-sm font-medium text-slate-700 truncate block w-full group-hover:text-blue-600 transition-colors">
+                            {item.fileName}
+                          </span>
+                          <span className="text-xs text-slate-400">
+                            {new Date(item.createdAt).toLocaleDateString()} • {item.summaryLength}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
           </div>
-        )}
 
-        {/* Success State */}
-        {status === 'success' && result && (
-          <div className="space-y-6">
-            <SummaryDisplay data={result} />
-
-            <button
-              onClick={handleNewDocument}
-              className="w-full py-3 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
-            >
-              Summarize Another Document
-            </button>
-          </div>
-        )}
+        </div>
 
         {/* Footer */}
-        <footer className="mt-16 text-center text-xs text-gray-400 pb-8">
-          <p>
-            Powered by Google Gemini AI \u2022 Built with Next.js & Tailwind CSS
-          </p>
+        <footer className="mt-20 text-center text-sm font-medium text-slate-400 pb-8">
+          <p>Built with Next.js & Google Gemini 3.6 Flash</p>
         </footer>
       </main>
     </div>

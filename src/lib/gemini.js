@@ -7,39 +7,45 @@ const SUMMARY_PROMPTS = {
 {
   "summary": "A concise 2-3 sentence summary capturing the core message.",
   "keyPoints": ["Key point 1", "Key point 2", "Key point 3"],
-  "improvementSuggestions": ["Suggestion 1", "Suggestion 2"]
+  "improvementSuggestions": ["Suggestion 1", "Suggestion 2"],
+  "extractedText": "The exact raw text extracted from the document."
 }
 
 Rules:
 - Summary must be 2-3 sentences maximum
 - Include 3-5 key points
 - Include 2-3 improvement suggestions for the document (e.g., clarity, structure, missing information)
+- 'extractedText' should contain the full text you read from the document.
 - Respond ONLY with valid JSON, no other text`,
 
   medium: `You are a professional document analyst. Analyze the provided document and return a response in the following JSON format ONLY (no markdown code fences, just raw JSON):
 {
   "summary": "A detailed paragraph summary covering all major themes and conclusions.",
   "keyPoints": ["Key point 1", "Key point 2", "Key point 3", "Key point 4", "Key point 5"],
-  "improvementSuggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3"]
+  "improvementSuggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3"],
+  "extractedText": "The exact raw text extracted from the document."
 }
 
 Rules:
 - Summary should be a detailed paragraph (4-6 sentences)
 - Include 5-7 key points
 - Include 3-4 improvement suggestions for the document
+- 'extractedText' should contain the full text you read from the document.
 - Respond ONLY with valid JSON, no other text`,
 
   long: `You are a professional document analyst. Analyze the provided document and return a response in the following JSON format ONLY (no markdown code fences, just raw JSON):
 {
   "summary": "A comprehensive multi-paragraph summary covering all sections, arguments, data, and conclusions in detail.",
   "keyPoints": ["Key point 1", "Key point 2", "Key point 3", "Key point 4", "Key point 5", "Key point 6", "Key point 7"],
-  "improvementSuggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3", "Suggestion 4"]
+  "improvementSuggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3", "Suggestion 4"],
+  "extractedText": "The exact raw text extracted from the document."
 }
 
 Rules:
 - Summary should be comprehensive (2-3 paragraphs)
 - Include 7-10 key points
 - Include 4-5 improvement suggestions for the document
+- 'extractedText' should contain the full text you read from the document.
 - Respond ONLY with valid JSON, no other text`
 };
 
@@ -75,6 +81,7 @@ export async function summarizeDocument(fileBuffer, mimeType, summaryLength = 'm
       summary: parsed.summary || 'No summary generated.',
       keyPoints: parsed.keyPoints || [],
       improvementSuggestions: parsed.improvementSuggestions || [],
+      extractedText: parsed.extractedText || 'No text could be extracted.',
     };
   } catch (error) {
     console.error('Gemini API Error:', error);

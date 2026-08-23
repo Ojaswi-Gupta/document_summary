@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server';
 import { summarizeDocument } from '@/lib/gemini';
 
-const ALLOWED_TYPES = [
+export const ALLOWED_TYPES = [
   'application/pdf',
   'image/png',
   'image/jpeg',
   'image/jpg',
   'image/webp',
+  'text/plain' // Added for sample document
 ];
 
-const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB (Vercel serverless limit)
+export const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB
 
 export async function POST(request) {
   try {
@@ -20,7 +21,7 @@ export async function POST(request) {
     // Validate file exists
     if (!file || !(file instanceof File)) {
       return NextResponse.json(
-        { error: 'No file provided. Please upload a PDF or image file.' },
+        { error: 'No file provided. Please upload a document.' },
         { status: 400 }
       );
     }
@@ -28,7 +29,7 @@ export async function POST(request) {
     // Validate file type
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: `Unsupported file type: ${file.type}. Please upload a PDF, PNG, JPG, or WEBP file.` },
+        { error: `Unsupported file type: ${file.type}. Please upload a PDF, PNG, JPG, WEBP, or TXT file.` },
         { status: 400 }
       );
     }
@@ -62,6 +63,8 @@ export async function POST(request) {
       fileType: file.type,
       fileSize: file.size,
       summaryLength,
+      id: Date.now().toString(), // Added ID for history tracking
+      createdAt: new Date().toISOString(),
       ...result,
     });
   } catch (error) {

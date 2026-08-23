@@ -1,26 +1,28 @@
 # DocSummary AI - Smart Document Summary Assistant
 
-🔗 **Live Demo:** [Coming soon — deploy to Vercel]
+🔗 **Live Demo:** [https://document-summary-chi.vercel.app](https://document-summary-chi.vercel.app)
 
-A modern web application that takes any document (PDF or image) and generates AI-powered smart summaries with key points and improvement suggestions.
+A professional, production-ready web application that takes any document (PDF or image) and generates AI-powered smart summaries with key points, raw text extraction, and improvement suggestions.
 
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?logo=tailwind-css)
-![Google Gemini](https://img.shields.io/badge/Google_Gemini-2.0_Flash-4285F4?logo=google)
+![Google Gemini](https://img.shields.io/badge/Google_Gemini-3.6_Flash-4285F4?logo=google)
+![Vitest](https://img.shields.io/badge/Tested_with-Vitest-729B1B?logo=vitest)
 
 ---
 
-## ✨ Features
+## ✨ Enterprise-Grade Features
 
-- **Document Upload** — Drag-and-drop or file picker for PDFs and images (PNG, JPG, WEBP)
-- **Text Extraction** — Native PDF parsing and OCR for scanned documents via Gemini's multimodal AI
+- **One-Click Sample Document** — Try the app instantly without finding a file to upload
+- **Raw Text Extraction** — View the exact raw text extracted from the document alongside the AI summary
+- **Local History (Privacy-First)** — Your past 5 summaries are saved securely in your browser's local storage
+- **Rate Limiting UX** — Real-time indicator showing remaining daily requests
 - **Smart Summaries** — Choose between short, medium, or long summaries
-- **Key Points** — Automatically extracted highlights from your document
-- **Improvement Suggestions** — AI-powered feedback on document quality
-- **Copy to Clipboard** — One-click copy of the entire summary
+- **Data Reduction Stats** — See exactly how much reading time the AI saved you (e.g., 95% reduction)
+- **Document Upload** — Drag-and-drop or file picker for PDFs, Images, and TXT files
+- **Copy to Clipboard** — One-click copy of the entire summary or raw text
 - **Responsive Design** — Works seamlessly on desktop, tablet, and mobile
 - **Loading States** — Animated progress indicators for better UX
-- **Error Handling** — User-friendly error messages with retry functionality
 
 ---
 
@@ -30,10 +32,10 @@ A modern web application that takes any document (PDF or image) and generates AI
 |-------|-----------|---------|
 | Frontend | Next.js 15 (App Router) | React framework with server-side capabilities |
 | Styling | Tailwind CSS 4 | Utility-first responsive design |
-| AI/ML | Google Gemini 2.0 Flash | Document understanding, OCR, and summarization |
+| AI/ML | Google Gemini 3.6 Flash | Document understanding, OCR, and summarization |
 | Upload | react-dropzone | Drag-and-drop file upload interface |
-| Icons | Lucide React | Clean, consistent icon library |
-| Hosting | Vercel | Serverless deployment with CDN |
+| Testing | Vitest | Unit testing for API validation logic |
+| Hosting | Vercel | Serverless deployment with edge caching |
 
 ---
 
