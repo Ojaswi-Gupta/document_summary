@@ -25,6 +25,84 @@ Upload a PDF, image, or audio recording, and the AI will extract the text, gener
 *   **AI Engine:** Google Gemini SDK (`gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-2.5-flash`)
 *   **Deployment:** Vercel
 
+## 🏗️ Architecture & Data Flow
+
+```mermaid
+graph TD
+    %% Client Layer
+    subgraph Frontend [Next.js Client-Side Component]
+        UI[User Interface]
+        FileUpload[File Dropzone]
+        Chat[Interactive Chatbot]
+        TTS[Web Speech API / TTS]
+        LocalStorage[(Local Storage)]
+    end
+
+    %% Network Layer
+    subgraph API [Next.js Serverless Routes]
+        SummarizeRoute[/api/summarize/]
+        ChatRoute[/api/chat/]
+    end
+
+    %% Service Layer
+    subgraph Services [Backend Logic & AI]
+        PromptBuilder[Prompt & Translation Builder]
+        ModelRouter{HA Model Rotation Router}
+        Gemini[Google Gemini API]
+    end
+
+    %% Flow
+    UI -->|File + Translation Options| FileUpload
+    FileUpload -->|FormData| SummarizeRoute
+    Chat -->|Message + Context| ChatRoute
+    
+    SummarizeRoute --> PromptBuilder
+    ChatRoute --> PromptBuilder
+    
+    PromptBuilder --> ModelRouter
+    ModelRouter -->|Primary: 3.6-flash| Gemini
+    ModelRouter -.->|Fallback on 429 Error| Gemini
+    
+    Gemini -->|JSON / Text| ModelRouter
+    ModelRouter --> API
+    API -->|Parsed Response| UI
+    
+    UI -->|Read Aloud| TTS
+    UI -->|Save History| LocalStorage
+```
+
+## 📁 Directory Structure
+
+```text
+doc-summary-assistant/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── chat/
+│   │   │   │   └── route.js       # Chatbot API endpoint & model fallback
+│   │   │   └── summarize/
+│   │   │       └── route.js       # Validation, translation & generation API
+│   │   ├── globals.css            # Tailwind & custom CSS variables
+│   │   ├── layout.js              # Next.js root layout
+│   │   └── page.js                # Main application state & UI orchestrator
+│   ├── components/
+│   │   ├── DocumentChat.jsx       # Chatbot interface & message history
+│   │   ├── ErrorMessage.jsx       # Reusable error banners
+│   │   ├── FileUpload.jsx         # Dropzone for PDF, Images, and Audio
+│   │   ├── Header.jsx             # Navigation & rate limit tracking
+│   │   ├── LoadingSpinner.jsx     # Animated UI loading states
+│   │   ├── SummaryDisplay.jsx     # Renders AI JSON output, Handles TTS
+│   │   ├── SummaryOptions.jsx     # Summary length toggles
+│   │   └── Typewriter.jsx         # Custom organic streaming text effect
+│   └── lib/
+│       └── gemini.js              # Gemini SDK client, schemas & prompt injection
+├── public/                        # Static assets
+├── .env.local                     # Environment variables (Git-ignored)
+├── next.config.mjs                # Next.js configuration
+├── package.json                   # Project dependencies
+└── README.md                      # Documentation
+```
+
 ## 💻 Running Locally
 
 1. **Clone the repository:**
